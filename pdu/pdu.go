@@ -94,9 +94,23 @@ func ParseRegisteredDelivery(b byte) RegisteredDelivery {
 	return out
 }
 
+func RegisteredNoDeliveryReceipt() RegisteredDelivery {
+	return ParseRegisteredDelivery(NoDeliveryReceipt)
+}
+
+func RegisteredYesDeliveryReceipt() RegisteredDelivery {
+	return ParseRegisteredDelivery(YesDeliveryReceipt)
+}
+func New()  {
+
+}
+
 const (
+	//no receipt
 	NoDeliveryReceipt   = 0x0
+	//receipt requested when final outcome is delivery success or failure
 	YesDeliveryReceipt  = 0x1
+	//receipt requested when final outcome is delivery failure
 	FailDeliveryReceipt = 0x2
 )
 

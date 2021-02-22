@@ -3,38 +3,53 @@ package pdu
 import (
 	"errors"
 	"fmt"
-	"regexp"
+	"strconv"
 	"strings"
 	"time"
 )
 
-// DeliveryReceipt in format
-// “id:IIIIIIIIII sub:SSS dlvrd:DDD submit date:YYMMDDhhmm done date:YYMMDDhhmm stat:DDDDDDD err:E Text: ...”
-type DeliveryReceipt struct {
-	Id         string
-	Sub        string
-	Dlvrd      string
-	SubmitDate time.Time
-	DoneDate   time.Time
-	Stat       DelStat
-	Err        string
-	Text       string
-}
-
-type DelStat string
-
-const (
-	DelStatEnRoute       DelStat = "ENROUTE"
-	DelStatDelivered     DelStat = "DELIVRD"
-	DelStatExpired       DelStat = "EXPIRED"
-	DelStatDeleted       DelStat = "DELETED"
-	DelStatUndeliverable DelStat = "UNDELIV"
-	DelStatAccepted      DelStat = "ACCEPTD"
-	DelStatUnknown       DelStat = "UNKNOWN"
-	DelStatRejected      DelStat = "REJECTD"
+type (
+	DeliveryStat string
+	DeliveryErr  int
 )
 
-var DelStatMap = map[uint8]DelStat{
+// DeliveryReceipt in format
+//Receipt in short_message field
+//Many pre-v3.4 APIs and Message Centers supporting v3.3 are likely to have a means of passing receipt information
+//within the short_message field. This applies to MC Delivery Receipts and Intermediate Notifications.
+//The format specifics of this information are SMS gateway and SMSC platform specific and beyond the scope of the specification.
+//However, the following shows the approach typically taken:
+//id:123A456B sub:1 dlvrd:1 submit date:1702281424 done date:1702281424 stat:DELIVRD err:0 text:
+type DeliveryReceipt struct {
+	Id         string       //The message ID allocated to the message by the SMSC when originally submitted.
+	Sub        int          //Number of short messages originally submitted. The value may be padded with leading zeros.
+	Dlvrd      int          //Number of short messages delivered. The value may be padded with leading zeros.
+	SubmitDate time.Time    //The time and date at which the short message was submitted. In the case of a message which has been replaced, this is the date that the original message was replaced.
+	DoneDate   time.Time    //The time and date at which the short message reached it’s final state. The format is the same as for the submit date.
+	Stat       DeliveryStat //The final status of the message. See Message states below. State text may be abbreviated.
+	Err        DeliveryErr  //A network or SMSC error code for the message. See Error codes below.
+	Text       string       //Unused field, result will be blank.
+}
+
+const (
+	DelStatEnRoute DeliveryStat = "ENROUTE" //The message is in enroute state.
+	//This is a general state used to describe a message as being active within the MC.
+	//The message may be in retry or dispatched to a mobile network for delivery to the mobile.
+	DelStatDelivered DeliveryStat = "DELIVRD" //Message is delivered to destination.
+	// The message has been delivered to the destination.
+	//No further deliveries will occur.
+	DelStatExpired DeliveryStat = "EXPIRED" // Message validity period has expired. The message has failed to be
+	// delivered within its validity period and/or retry period.
+	//No further delivery attempts will be made.
+	DelStatDeleted DeliveryStat = "DELETED" //Message has been deleted. The message has been cancelled or deleted from the MC.
+	// No further delivery attempts will take place.
+	DelStatUndeliverable DeliveryStat = "UNDELIV"
+	DelStatAccepted      DeliveryStat = "ACCEPTD"
+	DelStatUnknown       DeliveryStat = "UNKNOWN"
+	DelStatRejected      DeliveryStat = "REJECTD"
+)
+
+var DelStatMap = map[uint8]DeliveryStat{
 	1: DelStatEnRoute,
 	2: DelStatDelivered,
 	3: DelStatExpired,
@@ -46,90 +61,84 @@ var DelStatMap = map[uint8]DelStat{
 }
 
 func (dr *DeliveryReceipt) String() string {
+
 	return fmt.Sprintf(
-		"id:%s sub:%s dlvrd:%s submit date:%s done date:%s stat:%s err:%s text:%s",
+		"id:%s sub:%d dlvrd:%d submit date:%s done date:%s stat:%s err:%d text:%s",
 		dr.Id, dr.Sub, dr.Dlvrd, dr.SubmitDate.Format(recDateLayout), dr.DoneDate.Format(recDateLayout), dr.Stat, dr.Err, dr.Text,
 	)
 }
 
-var deliveryReceipt = regexp.MustCompile(`(\w+ ?\w+)+:([\w\-]+)`)
-
-// YYMMDDhhmm
-var recDateLayout = "0601021504"
-var secRecDateLayout = "060102150405"
+var (
+	recDateLayout    = "0601021504"
+	secRecDateLayout ="060102150405";
+)
 
 // ParseDeliveryReceipt parses delivery receipt format defined in smpp 3.4 specification
 func ParseDeliveryReceipt(sm string) (*DeliveryReceipt, error) {
-	e := errors.New("smpp: invalid receipt format")
-	i := strings.Index(sm, "text:")
-	if i == -1 {
-		i = strings.Index(sm, "Text:")
+	var receipt DeliveryReceipt
+	textI := strings.Index(sm, " text:")
+	if textI == -1 {
+		return &DeliveryReceipt{}, errors.New("smpp: invalid receipt txt ")
+	}
+	textMsg := sm[textI+6:]
+	receipt.Text = textMsg
+	formatSm := sm[:textI]
+	formatSm = strings.Replace(formatSm, "done date:", "done_date:", 1)
+	formatSm = strings.Replace(formatSm, "submit date:", "submit_date:", 1)
+	receiptField := strings.Split(formatSm, " ")
+	i := -1
+	if len(receiptField) < 7 {
+		return &DeliveryReceipt{}, errors.New("smpp: receipt miss key ")
+
+	}
+	for _, fieldWithValue := range receiptField {
+		i = strings.Index(fieldWithValue, ":")
 		if i == -1 {
-			return nil, e
+			return &DeliveryReceipt{}, errors.New("smpp: invalid receipt format field " + fieldWithValue)
+
 		}
-	}
-	delRec := DeliveryReceipt{}
-	match := deliveryReceipt.FindAllStringSubmatch(sm[:i], -1)
-	for idx, m := range match {
-		if len(m) != 3 {
-			return nil, e
-		}
-		// TODO improve error with more details
-		switch idx {
-		case 0:
-			if m[1] != "id" {
-				return nil, e
-			}
-			delRec.Id = m[2]
-		case 1:
-			if m[1] != "sub" {
-				return nil, e
-			}
-			delRec.Sub = m[2]
-		case 2:
-			if m[1] != "dlvrd" {
-				return nil, e
-			}
-			delRec.Dlvrd = m[2]
-		case 3:
-			if m[1] != "submit date" {
-				return nil, e
-			}
-			t, err := time.Parse(recDateLayout, m[2])
+		switch fieldWithValue[:i] {
+		case "id":
+			receipt.Id = fieldWithValue[i+1:]
+		case "sub", "dlvrd":
+			count, err := strconv.Atoi(fieldWithValue[i+1:])
 			if err != nil {
-				t, err = time.Parse(secRecDateLayout, m[2])
-				if err != nil {
-					return nil, e
-				}
+				return &DeliveryReceipt{}, err
 			}
-			delRec.SubmitDate = t
-		case 4:
-			if m[1] != "done date" {
-				return nil, e
+			if fieldWithValue[:i] == "sub" {
+				receipt.Sub = count
+			} else {
+				receipt.Dlvrd = count
 			}
-			t, err := time.Parse(recDateLayout, m[2])
+
+		case "submit_date", "done_date":
+
+			date, err := time.Parse(recDateLayout, fieldWithValue[i+1:])
 			if err != nil {
-				t, err = time.Parse(secRecDateLayout, m[2])
+				date, err = time.Parse(secRecDateLayout, fieldWithValue[i+1:])
 				if err != nil {
-					return nil, e
+					return &DeliveryReceipt{}, err
 				}
+
 			}
-			delRec.DoneDate = t
-		case 5:
-			if m[1] != "stat" {
-				return nil, e
+			if fieldWithValue[:i] == "submit_date" {
+				receipt.SubmitDate = date
+			} else {
+				receipt.DoneDate = date
 			}
-			// TODO validate status value
-			delRec.Stat = DelStat(m[2])
-		case 6:
-			if m[1] != "err" {
-				return nil, e
+		case "stat":
+			receipt.Stat = DeliveryStat(fieldWithValue[i+1:])
+		case "err":
+			count, err := strconv.Atoi(fieldWithValue[i+1:])
+			if err != nil {
+				return &DeliveryReceipt{}, err
+
 			}
-			delRec.Err = m[2]
+			receipt.Err = DeliveryErr(count)
 		default:
-			return nil, e
+			return &DeliveryReceipt{}, errors.New("smpp: invalid receipt format field " + fieldWithValue)
 		}
+
 	}
-	delRec.Text = sm[i+5:]
-	return &delRec, nil
+	return &receipt, nil
 }
