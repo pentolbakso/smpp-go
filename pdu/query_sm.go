@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"time"
 
-	smpptime "github.com/ajankovic/smpp/time"
+	smpptime "github.com/Derek-meng/smpp/time"
 )
 
 // QuerySm represents quering PDU.

@@ -5,7 +5,7 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/ajankovic/smpp/pdu"
+	"github.com/Derek-meng/smpp/pdu"
 )
 
 // Context represents container for SMPP request related information.
