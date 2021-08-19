@@ -20,8 +20,12 @@ func (ln tcpKeepAliveListener) Accept() (c net.Conn, err error) {
 	if err != nil {
 		return
 	}
-	tc.SetKeepAlive(true)
-	tc.SetKeepAlivePeriod(3 * time.Minute)
+	if err := tc.SetKeepAlive(true); err != nil {
+		return tc, err
+	}
+	if err := tc.SetKeepAlivePeriod(3 * time.Minute); err != nil {
+		return tc, err
+	}
 	return tc, nil
 }
 
@@ -110,7 +114,7 @@ func (srv *Server) Serve(ln net.Listener) error {
 func (srv *Server) Unbind(ctx context.Context) error {
 	srv.mu.Lock()
 	for sess := range srv.activeSess {
-		Unbind(ctx, sess)
+		_ = Unbind(ctx, sess)
 	}
 	srv.mu.Unlock()
 	return srv.Close()

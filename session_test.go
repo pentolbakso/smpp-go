@@ -135,10 +135,8 @@ func TestESMESession(t *testing.T) {
 		t.Errorf("Got error during session close %+v", err)
 	}
 	errors := conn.Validate()
-	if errors != nil {
-		for _, err := range errors {
-			t.Error(err)
-		}
+	for _, err := range errors {
+		t.Error(err)
 	}
 }
 
@@ -189,10 +187,8 @@ func TestESMESessionInvalidStatus(t *testing.T) {
 		t.Errorf("Got error during session close %+v", err)
 	}
 	errors := conn.Validate()
-	if errors != nil {
-		for _, err := range errors {
-			t.Error(err)
-		}
+	for _, err := range errors {
+		t.Error(err)
 	}
 }
 
@@ -256,9 +252,7 @@ func TestSMSCSession(t *testing.T) {
 	}
 	sess.Close()
 	errors := conn.Validate()
-	if errors != nil {
-		for _, err := range errors {
-			t.Error(err)
-		}
+	for _, err := range errors {
+		t.Error(err)
 	}
 }

@@ -65,13 +65,14 @@ func BenchmarkParseDeliveryReceipt(b *testing.B) {
 	good := "id:123123123 sub:0 dlvrd:0 submit date:1507011202 done date:1507011101 stat:DELIVRD err:0 text:Test information"
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		ParseDeliveryReceipt(good)
+		_, _ = ParseDeliveryReceipt(good)
 	}
 	b.StopTimer()
 }
-func BenchmarkParseDeliveryReceipt01(b *testing.B)  {
+
+func BenchmarkParseDeliveryReceipt01(b *testing.B) {
 	good := "id:123123123 sub:0 dlvrd:0 submit date:1507011202 done date:1507011101 stat:DELIVRD err:0 text:Test information"
-	var rule = regexp.MustCompile(`(\w+ ?\w+)+:([\w\-]+)`)
+	rule := regexp.MustCompile(`(\w+ ?\w+)+:([\w\-]+)`)
 	type DeliveryReceipt struct {
 		Id         string
 		Sub        string
@@ -81,9 +82,8 @@ func BenchmarkParseDeliveryReceipt01(b *testing.B)  {
 		Stat       DeliveryStat
 		Err        string
 		Text       string
-
 	}
-	f:= func(sm string)(*DeliveryReceipt, error){
+	f := func(sm string) (*DeliveryReceipt, error) {
 		e := errors.New("smpp: invalid receipt format")
 		i := strings.Index(sm, "text:")
 		if i == -1 {
@@ -159,7 +159,7 @@ func BenchmarkParseDeliveryReceipt01(b *testing.B)  {
 	}
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		f(good)
+		_, _ = f(good)
 	}
 	b.StopTimer()
 }

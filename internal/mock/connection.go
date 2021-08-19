@@ -14,9 +14,8 @@ import (
 )
 
 const (
-	readR          = "read"
-	writeR         = "write"
-	countWritesOff = -90000000
+	readR  = "read"
+	writeR = "write"
 )
 
 type step struct {

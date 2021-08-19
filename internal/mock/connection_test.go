@@ -32,10 +32,8 @@ func TestConnFinishedScenario(t *testing.T) {
 		t.Fatalf("Invalid write results %d %v", n, err)
 	}
 	errs := c.Validate()
-	if errs != nil {
-		for _, err := range errs {
-			t.Error(err)
-		}
+	for _, err := range errs {
+		t.Error(err)
 	}
 }
 
@@ -69,20 +67,18 @@ func TestConnComplexScenario(t *testing.T) {
 	if err != nil || n != 1 {
 		t.Fatalf("Invalid read results %d %v", n, err)
 	}
-	n, err = c.Read(out)
+	_, err = c.Read(out)
 	if err == nil {
 		t.Error("expected read error")
 	}
-	n, err = c.Write(out)
+	_, err = c.Write(out)
 	if err == nil {
 		t.Error("expected write error")
 	}
 	c.Close()
 	errs := c.Validate()
-	if errs != nil {
-		for _, err := range errs {
-			t.Error(err)
-		}
+	for _, err := range errs {
+		t.Error(err)
 	}
 }
 
@@ -105,7 +101,7 @@ func TestConnPartialRead(t *testing.T) {
 		t.Fatalf("Reads are not equal\n% x\n!=\n% x", out, read)
 	}
 	errs := c.Validate()
-	if errs != nil {
+	if len(errs) > 0 {
 		for _, err := range errs {
 			t.Error(err)
 		}
@@ -152,10 +148,8 @@ func TestConnWait(t *testing.T) {
 		t.Fatalf("Reads are not equal\n% x\n!=\n% x", out, read)
 	}
 	errs := c.Validate()
-	if errs != nil {
-		for _, err := range errs {
-			t.Error(err)
-		}
+	for _, err := range errs {
+		t.Error(err)
 	}
 }
 
@@ -193,10 +187,8 @@ func TestConnWaitWriteFirst(t *testing.T) {
 		t.Fatalf("Reads are not equal\n% x\n!=\n% x", out, read)
 	}
 	errs := c.Validate()
-	if errs != nil {
-		for _, err := range errs {
-			t.Error(err)
-		}
+	for _, err := range errs {
+		t.Error(err)
 	}
 }
 
@@ -236,7 +228,7 @@ func TestConnProcessWrites(t *testing.T) {
 		}
 	}
 	errs := c.Validate()
-	if errs != nil {
+	if len(errs) > 0 {
 		for _, err := range errs {
 			t.Error(err)
 		}
@@ -265,7 +257,7 @@ func TestConnProcessReads(t *testing.T) {
 		}
 	}
 	errs := c.Validate()
-	if errs != nil {
+	if len(errs) > 0 {
 		for _, err := range errs {
 			t.Error(err)
 		}

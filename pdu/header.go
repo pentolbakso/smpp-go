@@ -25,12 +25,15 @@ type header struct {
 func (h header) Length() uint32 {
 	return h.length
 }
+
 func (h header) CommandID() CommandID {
 	return h.commandID
 }
+
 func (h header) Status() Status {
 	return h.status
 }
+
 func (h header) Sequence() uint32 {
 	return h.sequence
 }

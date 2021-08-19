@@ -26,7 +26,7 @@ type SubmitSm struct {
 	ValidityPeriod       time.Time
 	RegisteredDelivery   RegisteredDelivery
 	ReplaceIfPresentFlag int
-	DataCoding           int
+	DataCoding           int // DataCoding see more:https://en.wikipedia.org/wiki/Data_Coding_Scheme
 	SmDefaultMsgID       int
 	ShortMessage         string
 	Options              *Options

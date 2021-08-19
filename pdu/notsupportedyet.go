@@ -5,8 +5,7 @@ import (
 )
 
 // ReplaceSm Not supported yet.
-type ReplaceSm struct {
-}
+type ReplaceSm struct{}
 
 func (p ReplaceSm) CommandID() CommandID {
 	return ReplaceSmID
@@ -21,8 +20,7 @@ func (p *ReplaceSm) UnmarshalBinary(body []byte) error {
 }
 
 // ReplaceSmResp Not supported yet.
-type ReplaceSmResp struct {
-}
+type ReplaceSmResp struct{}
 
 func (p ReplaceSmResp) CommandID() CommandID {
 	return ReplaceSmRespID
@@ -37,8 +35,7 @@ func (p *ReplaceSmResp) UnmarshalBinary(body []byte) error {
 }
 
 // CancelSm Not supported yet.
-type CancelSm struct {
-}
+type CancelSm struct{}
 
 func (p CancelSm) CommandID() CommandID {
 	return CancelSmID
@@ -53,8 +50,7 @@ func (p *CancelSm) UnmarshalBinary(body []byte) error {
 }
 
 // CancelSmResp Not supported yet.
-type CancelSmResp struct {
-}
+type CancelSmResp struct{}
 
 func (p CancelSmResp) CommandID() CommandID {
 	return CancelSmRespID
@@ -69,8 +65,7 @@ func (p *CancelSmResp) UnmarshalBinary(body []byte) error {
 }
 
 // Outbind Not supported yet.
-type Outbind struct {
-}
+type Outbind struct{}
 
 func (p Outbind) CommandID() CommandID {
 	return OutbindID
@@ -85,8 +80,7 @@ func (p *Outbind) UnmarshalBinary(body []byte) error {
 }
 
 // SubmitMulti Not supported yet.
-type SubmitMulti struct {
-}
+type SubmitMulti struct{}
 
 func (p SubmitMulti) CommandID() CommandID {
 	return SubmitMultiID
@@ -101,8 +95,7 @@ func (p *SubmitMulti) UnmarshalBinary(body []byte) error {
 }
 
 // SubmitMultiResp Not supported yet.
-type SubmitMultiResp struct {
-}
+type SubmitMultiResp struct{}
 
 func (p SubmitMultiResp) CommandID() CommandID {
 	return SubmitMultiRespID
@@ -117,8 +110,7 @@ func (p *SubmitMultiResp) UnmarshalBinary(body []byte) error {
 }
 
 // AlertNotification Not supported yet.
-type AlertNotification struct {
-}
+type AlertNotification struct{}
 
 func (p AlertNotification) CommandID() CommandID {
 	return AlertNotificationID
@@ -134,6 +126,17 @@ func (p *AlertNotification) UnmarshalBinary(body []byte) error {
 
 // DataSm Not supported yet.
 type DataSm struct {
+	ServiceType        string
+	SourceAddrTon      int
+	SourceAddrNpi      int
+	SourceAddr         string
+	DestAddrTon        int
+	DestAddrNpi        int
+	DestinationAddr    string
+	EsmClass           EsmClass
+	RegisteredDelivery RegisteredDelivery
+	DataCoding         int
+	Options            *Options
 }
 
 func (p DataSm) CommandID() CommandID {
@@ -141,15 +144,35 @@ func (p DataSm) CommandID() CommandID {
 }
 
 func (p DataSm) MarshalBinary() ([]byte, error) {
-	return nil, fmt.Errorf("Command %s is not supported yet", p.CommandID())
+	out := append(
+		[]byte(p.ServiceType),
+		0,
+		byte(p.SourceAddrTon),
+		byte(p.SourceAddrNpi),
+	)
+	out = append(out, append([]byte(p.SourceAddr), 0)...)
+	out = append(out, byte(p.DestAddrTon), byte(p.DestAddrNpi))
+	out = append(out, append([]byte(p.DestinationAddr), 0)...)
+	out = append(out, p.EsmClass.Byte(), p.RegisteredDelivery.Byte(), byte(p.DataCoding))
+	if p.Options == nil {
+		return out, nil
+	}
+	opts, err := p.Options.MarshalBinary()
+	if err != nil {
+		return nil, err
+	}
+	return append(out, opts...), nil
 }
 
 func (p *DataSm) UnmarshalBinary(body []byte) error {
+	fmt.Println(body)
 	return fmt.Errorf("Command %s is not supported yet", p.CommandID())
 }
 
 // DataSmResp Not supported yet.
 type DataSmResp struct {
+	MessageID string
+	Options   *Options
 }
 
 func (p DataSmResp) CommandID() CommandID {
@@ -161,5 +184,7 @@ func (p DataSmResp) MarshalBinary() ([]byte, error) {
 }
 
 func (p *DataSmResp) UnmarshalBinary(body []byte) error {
-	return fmt.Errorf("Command %s is not supported yet", p.CommandID())
+	var err error
+	p.MessageID, p.Options, err = cStringOptsRespUnmarshal(body)
+	return err
 }

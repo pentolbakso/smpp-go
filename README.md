@@ -7,9 +7,6 @@
 
 - Fix Can't receive deliver_sm when Store and Forward Message Mode 
 
-
-[![GoDoc Badge]][GoDoc] [![GoReportCard Badge]][GoReportCard] [![Build Status](https://travis-ci.com/ajankovic/smpp.svg?branch=master)](https://travis-ci.com/ajankovic/smpp)
-
 **smpp** is library contains implementation of [SMPP 3.4 protocol](http://opensmpp.org/specs/smppv34_gsmumts_ig_v10.pdf).
 
 It allows easier creation of SMPP clients and servers by providing utilities for PDU and session handling.

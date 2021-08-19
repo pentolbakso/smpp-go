@@ -21,9 +21,9 @@ type PDU interface {
 
 // EsmClass is used to indicate special message attributes associated with the short message.
 type EsmClass struct {
-	Mode    int
-	Type    int
-	Feature int
+	Mode    int // Messaging Mode (bits 1-0)
+	Type    int // Message Type (bits 5-2)
+	Feature int // GSM Network Specific Features (bits 7-6)
 }
 
 // Byte converts EsmClass into a single byte for pdu encoding.
@@ -32,6 +32,7 @@ func (ec EsmClass) Byte() byte {
 	out |= byte(ec.Mode)
 	out |= byte(ec.Type) << 2
 	out |= byte(ec.Feature) << 6
+
 	return out
 }
 
@@ -44,6 +45,7 @@ func ParseEsmClass(b byte) EsmClass {
 	return out
 }
 
+// EsmClass Mode setting const
 const (
 	DefaultEsmMode         = 0x0
 	DatagramEsmMode        = 0x1
@@ -52,6 +54,7 @@ const (
 	NotApplicableEsmMode   = 0x7
 )
 
+// EsmClass Type setting const
 const (
 	DefaultEsmType = 0x0
 	DelRecEsmType  = 0x1
@@ -61,11 +64,12 @@ const (
 	IDNEsmType     = 0x8
 )
 
+// EsmClass Features setting const
 const (
-	NoEsmFeat          = 0x0
-	UDHIEsmFeat        = 0x1
-	RepPathEsmFeat     = 0x2
-	UDHIRepPathEsmFeat = 0x3
+	NoEsmFeat          = 0x0 // No specific features selected
+	UDHIEsmFeat        = 0x1 // UDHI Indicator set
+	RepPathEsmFeat     = 0x2 // Reply Path
+	UDHIRepPathEsmFeat = 0x3 // UDHI and Reply Path
 )
 
 // RegisteredDelivery is used to request an SMSC delivery receipt and/or SME
@@ -101,16 +105,13 @@ func RegisteredNoDeliveryReceipt() RegisteredDelivery {
 func RegisteredYesDeliveryReceipt() RegisteredDelivery {
 	return ParseRegisteredDelivery(YesDeliveryReceipt)
 }
-func New()  {
-
-}
 
 const (
-	//no receipt
-	NoDeliveryReceipt   = 0x0
-	//receipt requested when final outcome is delivery success or failure
-	YesDeliveryReceipt  = 0x1
-	//receipt requested when final outcome is delivery failure
+	// no receipt
+	NoDeliveryReceipt = 0x0
+	// receipt requested when final outcome is delivery success or failure
+	YesDeliveryReceipt = 0x1
+	// receipt requested when final outcome is delivery failure
 	FailDeliveryReceipt = 0x2
 )
 
