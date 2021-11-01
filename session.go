@@ -152,7 +152,7 @@ type response struct {
 // Session is the engine that coordinates SMPP protocol for bounded peers.
 type Session struct {
 	conf     *SessionConf
-	rwc      io.ReadWriteCloser
+	RWC      io.ReadWriteCloser
 	enc      *pdu.Encoder
 	dec      *pdu.Decoder
 	wg       sync.WaitGroup
@@ -191,7 +191,7 @@ func NewSession(rwc io.ReadWriteCloser, conf SessionConf) *Session {
 	}
 	sess := &Session{
 		conf:   &conf,
-		rwc:    rwc,
+		RWC:    rwc,
 		enc:    pdu.NewEncoder(rwc, conf.Sequencer),
 		dec:    pdu.NewDecoder(rwc),
 		sent:   make(map[uint32]chan response, conf.SendWinSize),
@@ -223,7 +223,7 @@ func (sess *Session) String() string {
 }
 
 func (sess *Session) remoteAddr() string {
-	if ra, ok := sess.rwc.(RemoteAddresser); ok {
+	if ra, ok := sess.RWC.(RemoteAddresser); ok {
 		return ra.RemoteAddr().String()
 	}
 	return ""
@@ -301,7 +301,7 @@ func (sess *Session) handleRequest(ctx context.Context, h pdu.Header, req pdu.PD
 		sess.wg.Done()
 	}()
 	sessCtx := &Context{
-		sess: sess,
+		Sess: sess,
 		ctx:  ctx,
 		seq:  h.Sequence(),
 		req:  req,
@@ -329,7 +329,7 @@ func (sess *Session) Close() error {
 		delete(sess.sent, k)
 		close(l)
 	}
-	sess.rwc.Close()
+	sess.RWC.Close()
 	if err := sess.setState(StateClosed); err != nil {
 		sess.mu.Unlock()
 		return err
