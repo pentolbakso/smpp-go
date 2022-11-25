@@ -5,7 +5,6 @@ package smpp
 import (
 	"context"
 	"crypto/rand"
-	"errors"
 	"flag"
 	"fmt"
 	"io"
@@ -20,7 +19,7 @@ import (
 var smppLogs bool
 
 func init() {
-	flag.BoolVar(&smppLogs, "smpp.logs", false, "show smpp logging")
+	flag.BoolVar(&smppLogs, "smpp.logs", true, "show smpp logging")
 }
 
 // Error implements Error and Temporary interfaces.
@@ -409,7 +408,7 @@ func (sess *Session) Send(ctx context.Context, req pdu.PDU) (pdu.PDU, error) {
 	select {
 	case resp, ok := <-l:
 		if !ok {
-			return nil, errors.New("smpp: session closed before receiving response")
+			return nil, SessionClosedBeforeReceiving
 		}
 		if resp.err != nil {
 			return resp.resp, resp.err
