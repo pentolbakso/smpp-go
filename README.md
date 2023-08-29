@@ -2,7 +2,7 @@
 
 ### Goals of this fork
 
-`github.com/pentolbakso/go-smpp` is a fork of `github.com/ajankovic/smpp` with the following changes:
+`github.com/pentolbakso/smpp-go` is a fork of `github.com/ajankovic/smpp` with the following changes:
 
 - Fix Can't receive deliver_sm when Store and Forward Message Mode
 
@@ -57,11 +57,11 @@ Although usable, project is still to be considered as _WORK IN PROGRESS_ until i
 
 You can use _go get_:
 
-    go get -u github.com/pentolbakso/go-smpp
+    go get -u github.com/pentolbakso/smpp-go
 
 ## Usage
 
-In order to do any kind of interaction you first need to create an SMPP [Session](https://godoc.org/github.com/pentolbakso/go-smpp#Session). Session is the main carrier of the protocol and enforcer of the specification rules.
+In order to do any kind of interaction you first need to create an SMPP [Session](https://godoc.org/github.com/pentolbakso/smpp-go#Session). Session is the main carrier of the protocol and enforcer of the specification rules.
 
 Naked session can be created with:
 

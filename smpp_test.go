@@ -9,8 +9,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/pentolbakso/go-smpp"
-	"github.com/pentolbakso/go-smpp/pdu"
+	"github.com/pentolbakso/smpp-go"
+	"github.com/pentolbakso/smpp-go/pdu"
 )
 
 type mockServer struct {

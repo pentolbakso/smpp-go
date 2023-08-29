@@ -9,7 +9,7 @@ import (
 	"io"
 	"time"
 
-	smpptime "github.com/pentolbakso/go-smpp/time"
+	smpptime "github.com/pentolbakso/smpp-go/time"
 )
 
 // PDU defines interface for PDU structures

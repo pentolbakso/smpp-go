@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"time"
 
-	smpptime "github.com/pentolbakso/go-smpp/time"
+	smpptime "github.com/pentolbakso/smpp-go/time"
 )
 
 // QuerySm represents quering PDU.
