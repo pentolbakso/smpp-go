@@ -6,8 +6,8 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/Derek-meng/smpp"
-	"github.com/Derek-meng/smpp/pdu"
+	"github.com/pentolbakso/go-smpp"
+	"github.com/pentolbakso/go-smpp/pdu"
 )
 
 var (

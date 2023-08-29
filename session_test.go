@@ -6,9 +6,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Derek-meng/smpp"
-	"github.com/Derek-meng/smpp/internal/mock"
-	"github.com/Derek-meng/smpp/pdu"
+	"github.com/pentolbakso/go-smpp"
+	"github.com/pentolbakso/go-smpp/internal/mock"
+	"github.com/pentolbakso/go-smpp/pdu"
 )
 
 type testSequencer struct {
