@@ -141,6 +141,10 @@ type SessionConf struct {
 	Logger        Logger
 	Handler       Handler
 	Sequencer     pdu.Sequencer
+	// MapResetInterval specifies the duration after which the session's map will be recreated
+	// to mitigate potential memory growth. Setting this to a positive duration can help
+	// manage memory usage, especially when large amounts of data are added and removed from the map.
+	MapResetInterval time.Duration
 }
 
 type response struct {
@@ -188,6 +192,10 @@ func NewSession(rwc io.ReadWriteCloser, conf SessionConf) *Session {
 	if conf.ID == "" {
 		conf.ID = genSessionID()
 	}
+
+	if conf.MapResetInterval == 0 {
+		conf.MapResetInterval = time.Hour * 12
+	}
 	sess := &Session{
 		conf:   &conf,
 		RWC:    rwc,
@@ -198,6 +206,7 @@ func NewSession(rwc io.ReadWriteCloser, conf SessionConf) *Session {
 	}
 	sess.wg.Add(1)
 	go sess.serve()
+	go sess.resetSentMapPeriodically()
 	return sess
 }
 
@@ -527,6 +536,30 @@ func (sess *Session) makeTransition(ID pdu.CommandID, received bool) error {
 // NotifyClosed provides channel that will be closed once session enters closed state.
 func (sess *Session) NotifyClosed() <-chan struct{} {
 	return sess.closed
+}
+
+func (sess *Session) resetSentMapPeriodically() {
+	ticker := time.NewTicker(sess.conf.MapResetInterval)
+	defer ticker.Stop()
+	for {
+		select {
+		case <-sess.closed:
+			return
+		case <-ticker.C:
+			sess.mu.Lock()
+			// Creating a new map to address the Go map's memory behavior where
+			// the underlying memory does not shrink even after entries are deleted.
+			// This helps in releasing memory occupied by old map's buckets.
+			// For a deeper dive into the memory behavior of Go maps, you can refer to:
+			// https://teivah.medium.com/maps-and-memory-leaks-in-go-a85ebe6e7e69
+			newSent := make(map[uint32]chan response)
+			for i, responses := range sess.sent {
+				newSent[i] = responses
+			}
+			sess.sent = newSent
+			sess.mu.Unlock()
+		}
+	}
 }
 
 // StatusError implements error interface for SMPP status errors.
