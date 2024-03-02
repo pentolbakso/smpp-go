@@ -80,8 +80,8 @@ func (ctx *Context) CloseSession() {
 	ctx.close = true
 }
 
-func (ctx *Context) Header() *pdu.Header {
-	return &ctx.hdr
+func (ctx *Context) Header() pdu.Header {
+	return ctx.hdr
 }
 
 // GenericNack returns generic request PDU as pdu.GenericNack.
