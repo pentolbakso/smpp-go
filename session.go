@@ -312,6 +312,7 @@ func (sess *Session) handleRequest(ctx context.Context, h pdu.Header, req pdu.PD
 		Sess: sess,
 		ctx:  ctx,
 		seq:  h.Sequence(),
+		hdr:  h,
 		req:  req,
 	}
 	sess.conf.Handler.ServeSMPP(sessCtx)
