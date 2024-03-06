@@ -282,6 +282,7 @@ func (sess *Session) serve() {
 			sess.mu.Unlock()
 
 			l <- response{
+				hdr:  h,
 				resp: p,
 				err:  toError(h.Status()),
 			}
