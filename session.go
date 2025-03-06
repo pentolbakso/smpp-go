@@ -207,7 +207,6 @@ func NewSession(rwc io.ReadWriteCloser, conf SessionConf) *Session {
 	}
 	sess.wg.Add(1)
 	go sess.serve()
-	go sess.resetSentMapPeriodically()
 	return sess
 }
 
@@ -244,6 +243,8 @@ func (sess *Session) serve() {
 	defer sess.wg.Done()
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
+	sess.wg.Add(1)
+	go sess.resetSentMapPeriodically(ctx)
 	for {
 		h, p, err := sess.dec.Decode()
 		if err != nil {
@@ -541,12 +542,13 @@ func (sess *Session) NotifyClosed() <-chan struct{} {
 	return sess.closed
 }
 
-func (sess *Session) resetSentMapPeriodically() {
+func (sess *Session) resetSentMapPeriodically(ctx context.Context) {
 	ticker := time.NewTicker(sess.conf.MapResetInterval)
+	defer sess.wg.Done()
 	defer ticker.Stop()
 	for {
 		select {
-		case <-sess.closed:
+		case <-ctx.Done():
 			return
 		case <-ticker.C:
 			sess.mu.Lock()
