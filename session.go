@@ -84,14 +84,14 @@ type Logger interface {
 type DefaultLogger struct{}
 
 // Tracef implements Logger interface.
-func (dl DefaultLogger) Tracef(msg string, params ...interface{}) {
+func (dl DefaultLogger) TraceF(msg string, params ...interface{}) {
 	if smppLogs {
 		log.Printf("TRCE: "+msg+"\n", params...)
 	}
 }
 
 // Debugf implements Logger interface.
-func (dl DefaultLogger) Debugf(msg string, params ...interface{}) {
+func (dl DefaultLogger) DebugF(msg string, params ...interface{}) {
 	if smppLogs {
 		log.Printf("DEBG: "+msg+"\n", params...)
 	}
