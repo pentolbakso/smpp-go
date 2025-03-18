@@ -69,7 +69,7 @@ func (ctx *Context) Respond(resp pdu.PDU, status pdu.Status) error {
 		ctx.Sess.mu.Unlock()
 		return err
 	}
-	ctx.Sess.conf.Logger.TraceF("sent response: %s %s %+v", ctx.Sess, resp.CommandID(), resp)
+	ctx.Sess.conf.Logger.DebugF("sent response: %s %s %+v", ctx.Sess, resp.CommandID(), resp)
 	ctx.Sess.mu.Unlock()
 
 	return nil

@@ -74,7 +74,6 @@ const (
 
 // Logger provides logging interface for getting info about internals of smpp package.
 type Logger interface {
-	TraceF(msg string, params ...interface{})
 	DebugF(msg string, params ...interface{})
 	InfoF(msg string, params ...interface{})
 	ErrorF(msg string, params ...interface{})
@@ -82,13 +81,6 @@ type Logger interface {
 
 // DefaultLogger prints logs if smpp.logs flag is set.
 type DefaultLogger struct{}
-
-// Tracef implements Logger interface.
-func (dl DefaultLogger) TraceF(msg string, params ...interface{}) {
-	if smppLogs {
-		log.Printf("TRCE: "+msg+"\n", params...)
-	}
-}
 
 // Debugf implements Logger interface.
 func (dl DefaultLogger) DebugF(msg string, params ...interface{}) {
@@ -265,7 +257,7 @@ func (sess *Session) serve() {
 		h, p, err := sess.dec.Decode()
 		if err != nil {
 			if err == io.EOF {
-				sess.conf.Logger.TraceF("decoding pdu: %s %+v", sess, err)
+				sess.conf.Logger.DebugF("decoding pdu: %s %+v", sess, err)
 			} else {
 				sess.conf.Logger.ErrorF("decoding pdu: %s %+v", sess, err)
 			}
@@ -281,7 +273,7 @@ func (sess *Session) serve() {
 		}
 		// Handle PDU requests.
 		if pdu.IsRequest(h.CommandID()) {
-			sess.conf.Logger.TraceF("received request: %s %s%+v", sess, p.CommandID(), p)
+			sess.conf.Logger.DebugF("received request: %s %s%+v", sess, p.CommandID(), p)
 			if sess.reqCount == sess.conf.ReqWinSize {
 				sess.throttle(h.Sequence())
 			} else {
@@ -294,7 +286,7 @@ func (sess *Session) serve() {
 		}
 		// Handle PDU responses.
 		if l, ok := sess.sent[h.Sequence()]; ok {
-			sess.conf.Logger.TraceF("received response: %s %s%+v", sess, p.CommandID(), p)
+			sess.conf.Logger.DebugF("received response: %s %s%+v", sess, p.CommandID(), p)
 			delete(sess.sent, h.Sequence())
 			sess.mu.Unlock()
 
@@ -364,7 +356,7 @@ func (sess *Session) Close() error {
 	}
 	sess.mu.Unlock()
 	sess.wg.Wait()
-	sess.conf.Logger.TraceF("session closed: %s", sess)
+	sess.conf.Logger.DebugF("session closed: %s", sess)
 	close(sess.closed)
 	return nil
 }
@@ -432,7 +424,7 @@ func (sess *Session) Send(ctx context.Context, req pdu.PDU, opts ...pdu.EncoderO
 	}
 	l := make(chan response, 1)
 	sess.sent[seq] = l
-	sess.conf.Logger.TraceF("request sent: %s %s%+v", sess, req.CommandID(), req)
+	sess.conf.Logger.DebugF("request sent: %s %s%+v", sess, req.CommandID(), req)
 	sess.mu.Unlock()
 	select {
 	case resp, ok := <-l:
