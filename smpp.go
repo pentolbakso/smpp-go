@@ -18,7 +18,7 @@
 //	sm := smpp.SubmitSm{
 //	    SourceAddr:      "11111111",
 //	    DestinationAddr: "22222222",
-//	    ShortMessage:    "Hello from SMPP!",
+//	    ShortMessage:    []byte("Hello from SMPP!"),
 //	}
 //	// Session can then be used for sending PDUs.
 //	resp, err := sess.Send(p)

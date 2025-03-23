@@ -28,7 +28,7 @@ type DeliverSm struct {
 	ReplaceIfPresentFlag int
 	DataCoding           int
 	SmDefaultMsgID       int
-	ShortMessage         string
+	ShortMessage         []byte
 	Options              *Options
 }
 
@@ -179,7 +179,7 @@ func (p *DeliverSm) UnmarshalBinary(body []byte) error {
 	if err != nil {
 		return fmt.Errorf("smpp/pdu: decoding short_message %s", err)
 	}
-	p.ShortMessage = string(sm)
+	p.ShortMessage = sm
 	if buf.Len() == 0 {
 		return nil
 	}

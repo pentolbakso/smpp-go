@@ -28,7 +28,7 @@ type SubmitSm struct {
 	ReplaceIfPresentFlag int
 	DataCoding           int // DataCoding see more:https://en.wikipedia.org/wiki/Data_Coding_Scheme
 	SmDefaultMsgID       int
-	ShortMessage         string
+	ShortMessage         []byte
 	Options              *Options
 }
 
@@ -179,7 +179,7 @@ func (p *SubmitSm) UnmarshalBinary(body []byte) error {
 	if err != nil {
 		return fmt.Errorf("smpp/pdu: decoding short_message %s", err)
 	}
-	p.ShortMessage = string(sm)
+	p.ShortMessage = sm
 	if buf.Len() == 0 {
 		return nil
 	}

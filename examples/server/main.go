@@ -38,7 +38,7 @@ func main() {
 				if err != nil {
 					fail("Invalid PDU in context error: %+v", err)
 				}
-				fmt.Fprintf(os.Stdout, "UPPER: %s\n", strings.ToUpper(sm.ShortMessage))
+				fmt.Fprintf(os.Stdout, "UPPER: %s\n", strings.ToUpper(string(sm.ShortMessage)))
 				msgID++
 				resp := sm.Response(fmt.Sprintf("msgID_%d", msgID))
 				if err := ctx.Respond(resp, pdu.StatusOK); err != nil {

@@ -91,7 +91,7 @@ func TestESMESession(t *testing.T) {
 	submitSm := &pdu.SubmitSm{
 		SourceAddr:      "source",
 		DestinationAddr: "destination",
-		ShortMessage:    "this is the message",
+		ShortMessage:    []byte("this is the message"),
 	}
 	submitSmResp := submitSm.Response("id0")
 	unbind := pdu.Unbind{}
@@ -148,7 +148,7 @@ func TestESMESessionInvalidStatus(t *testing.T) {
 	submitSm := &pdu.SubmitSm{
 		SourceAddr:      "source",
 		DestinationAddr: "destination",
-		ShortMessage:    "this is the message",
+		ShortMessage:    []byte("this is the message"),
 	}
 	submitSmResp := submitSm.Response("id0")
 	e := newTestEncoder(0)
@@ -206,7 +206,7 @@ func TestSMSCSession(t *testing.T) {
 	submitSm := &pdu.SubmitSm{
 		SourceAddr:      "source",
 		DestinationAddr: "destination",
-		ShortMessage:    "this is the message",
+		ShortMessage:    []byte("this is the message"),
 	}
 	submitSmResp := submitSm.Response("id0")
 
